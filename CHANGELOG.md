@@ -1,5 +1,59 @@
 # Changelog
 
+## 1.4.2 - 2019-07-09
+
+### Added
+
+### Changed
+* Extension lists are now in an extensions directory
+* Update dependencies
+
+### Fixed
+
+## 1.4.1 - 2019-07-08
+
+### Added
+* Catch SIGINT fron Ctrl+C and save any output files specified (#30)
+* Hide results with specific lengths, or ranges of lengths
+
+### Changed
+
+### Fixed
+* Dirble now runs correctly when there is no TTY to attach to
+
+## 1.4.0 - 2019-07-05
+
+### Added
+* Add ability to do scans using HEAD and POST requests
+* Directories which return 401 and 403 codes are no longer scanned by default
+* Not found detection now can detect response lengths that vary by the URL length
+* Added dockerfile to git repository
+* Commit hashes are now displayed with the version number in local builds
+
+### Changed
+* Wordlist items now have a leading and trailing slash removed
+* Default wordlist location checks have been improved
+* SimpleLog crate now used to print additional scanning information
+* Silent and verbose flags now affect logging level
+* Output for listable directories now has a bold L
+* Wordlist splitting of initial URLs is increased
+
+### Fixed
+* Disable recursion flag now works as intended
+* Validator always defaulting to 404
+
+## 1.3.1 - 2019-05-01
+
+### Changed
+* The --host argument has been changed to --uri and --url
+* The --host-file argument has been changed to --uri-file and --url-file
+* Version number added to startup text
+* Startup text now uses "Targets" instead of "Hosts"
+* Version number is now pulled from cargo.toml
+
+### Fixed
+* Panic when there were errors during target validation
+
 ## 1.3.0 - 2019-04-22
 
 ### Added

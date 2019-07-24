@@ -17,22 +17,26 @@
 
 use crate::request::RequestResponse;
 use colored::*;
-
-#[cfg(test)]
-mod tests;
+use serde_json;
+use simple_xml_serialize::XMLElement;
 
 #[inline]
-pub fn output_indentation(response: &RequestResponse, print_newlines: bool, indentation: bool) -> String {
+pub fn output_indentation(
+    response: &RequestResponse,
+    print_newlines: bool,
+    indentation: bool,
+) -> String {
     let mut output: String;
 
     if response.is_directory && print_newlines {
         output = String::from("\n");
-    }
-    else {
+    } else {
         output = String::from("");
     }
 
-    if !indentation { return output }
+    if !indentation {
+        return output;
+    }
 
     let mut depth = response.url.matches("/").count() as i32;
 
@@ -40,11 +44,11 @@ pub fn output_indentation(response: &RequestResponse, print_newlines: bool, inde
         depth -= 1;
     }
 
-    depth -= response.parent_depth as i32; 
+    depth -= response.parent_depth as i32;
     depth -= 1;
-    
+
     if depth <= 0 {
-        return output
+        return output;
     }
 
     for _ in 0..depth {
@@ -56,10 +60,15 @@ pub fn output_indentation(response: &RequestResponse, print_newlines: bool, inde
 
 #[inline]
 pub fn output_letter(response: &RequestResponse) -> String {
-    if response.is_directory && response.is_listable { String::from("L ") }
-    else if response.is_directory { String:: from("D ") }
-    else if response.found_from_listable { String::from("~ ") }
-    else { String::from("+ ") }
+    if response.is_directory && response.is_listable {
+        "L ".bold().to_string()
+    } else if response.is_directory {
+        String::from("D ")
+    } else if response.found_from_listable {
+        String::from("~ ")
+    } else {
+        String::from("+ ")
+    }
 }
 
 #[inline]
@@ -69,66 +78,36 @@ pub fn output_url(response: &RequestResponse) -> String {
 
 #[inline]
 pub fn output_suffix(response: &RequestResponse, color: bool) -> String {
-    if response.found_from_listable { return String::from("(SCRAPED)") }
+    if response.found_from_listable {
+        return String::from("(SCRAPED)");
+    }
 
-    let mut code_string:String = format!{"{}", response.code};
+    let mut code_string: String = format!("{}", response.code);
     if color {
         code_string = match response.code {
-            200...299 => { code_string.green().to_string() }
-            300...399 => { code_string.cyan().to_string() }
-            400...499 => { code_string.red().to_string() }
-            500...599 => { code_string.yellow().to_string() }
-            _ => { code_string }
+            200..=299 => code_string.green().to_string(),
+            300..=399 => code_string.cyan().to_string(),
+            400..=499 => code_string.red().to_string(),
+            500..=599 => code_string.yellow().to_string(),
+            _ => code_string,
         }
     }
 
     match response.code {
-        301 | 302 => {
-            format!("(CODE:{}|SIZE:{:#?}|DEST:{})", 
-                code_string, response.content_len, response.redirect_url)
-        }
-        _ => {
-            format!("(CODE:{}|SIZE:{:#?})", code_string, response.content_len)
-        }
+        301 | 302 => format!(
+            "(CODE:{}|SIZE:{:#?}|DEST:{})",
+            code_string, response.content_len, response.redirect_url,
+        ),
+        _ => format!("(CODE:{}|SIZE:{:#?})", code_string, response.content_len),
     }
 }
 
 #[inline]
 pub fn output_xml(response: &RequestResponse) -> String {
-    format!("<file url=\"{}\">
-    <status_code>{}</status_code>
-    <size>{}</size>
-    <is_directory>{}</is_directory>
-    <is_listable>{}</is_listable>
-    <found_from_listable>{}</found_from_listable>
-    <redirect_url>{}</redirect_url>
-</file>\n", 
-    response.url,
-    response.code,
-    response.content_len,
-    response.is_directory,
-    response.is_listable,
-    response.found_from_listable,
-    response.redirect_url)
+    format!("{}\n", XMLElement::from(response).to_string())
 }
 
 #[inline]
 pub fn output_json(response: &RequestResponse) -> String {
-
-    format!("{{\
-        \"url\": \"{}\", \
-        \"code\": {}, \
-        \"size\": {}, \
-        \"is_directory\": {}, \
-        \"is_listable\": {}, \
-        \"found_from_listable\": {}, \
-        \"redirect_url\": \"{}\"\
-        }}",
-        response.url,
-        response.code,
-        response.content_len,
-        response.is_directory,
-        response.is_listable,
-        response.found_from_listable,
-        response.redirect_url)
+    serde_json::to_string(response).unwrap()
 }
